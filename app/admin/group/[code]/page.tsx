@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import CopyLink from './CopyLink';
+import DeleteButton from './DeleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,6 +110,8 @@ export default async function AdminGroupPage({
           </div>
         ))}
       </div>
+
+      <DeleteButton groupId={group.id} />
 
       <Link href="/admin" className="back-link">
         ← Voltar para admin
