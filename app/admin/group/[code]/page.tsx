@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CopyLink from './CopyLink';
 import DeleteButton from './DeleteButton';
 import AddParticipant from './AddParticipant';
+import RemoveParticipant from './RemoveParticipant';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,15 +100,22 @@ export default async function AdminGroupPage({
             }}
           >
             <span>{p.name}</span>
-            <span style={{
-              fontSize: '0.8rem',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              background: p.viewed ? '#e8f5e9' : '#fff3e0',
-              color: p.viewed ? '#2e7d32' : '#e65100',
-            }}>
-              {p.viewed ? '✓ Viu' : 'Pendente'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                fontSize: '0.8rem',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                background: p.viewed ? '#e8f5e9' : '#fff3e0',
+                color: p.viewed ? '#2e7d32' : '#e65100',
+              }}>
+                {p.viewed ? '✓ Viu' : 'Pendente'}
+              </span>
+              <RemoveParticipant
+                participantId={p.id}
+                participantName={p.name}
+                groupId={group.id}
+              />
+            </div>
           </div>
         ))}
       </div>
