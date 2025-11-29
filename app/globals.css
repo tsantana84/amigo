@@ -1,0 +1,212 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #c41e3a;
+  --primary-hover: #a01830;
+  --background: #fafafa;
+  --text-color: #333;
+  --border-color: #ddd;
+  --success-color: #28a745;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  background-color: var(--background);
+  color: var(--text-color);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+p {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: #666;
+}
+
+.btn-secondary:hover {
+  background-color: #555;
+}
+
+/* Participant buttons */
+.participant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 1.5rem;
+}
+
+.participant-button {
+  display: block;
+  padding: 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.participant-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.participant-button:active {
+  transform: scale(0.98);
+}
+
+/* Success page */
+.success-box {
+  background-color: #e8f5e9;
+  border: 2px solid var(--success-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.link-box {
+  background-color: #fff;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.link-box input {
+  background-color: #f5f5f5;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Result page */
+.result-box {
+  background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+  color: white;
+  padding: 40px 20px;
+  border-radius: 16px;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.result-box .label {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.result-box .name {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Error message */
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Icon/emoji styling */
+.icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Back link */
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
