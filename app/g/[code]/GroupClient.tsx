@@ -47,7 +47,7 @@ export default function GroupClient({ groupCode, groupName, participants, partic
       <main className="container" style={{ paddingTop: '40px' }}>
         <div className="icon">🎁</div>
         <h1>{groupName}</h1>
-        <p><strong>{selected.name}</strong>, você é o Amigo Secreto de:</p>
+        <p><strong>{selected.name}</strong>, seu Amigo Secreto é:</p>
 
         <div className="result-box">
           <div className="label">Você tirou:</div>
