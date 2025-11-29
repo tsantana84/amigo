@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Adiciona o participante
-    const { data: participant, error: participantError } = await supabase
+    const { data: newParticipant, error: participantError } = await supabase
       .from('participants')
       .insert({ group_id: groupId, name: name.trim() })
       .select()
       .single();
 
-    if (participantError || !participant) {
+    if (participantError || !newParticipant) {
       console.error('Erro ao adicionar participante:', participantError);
       return NextResponse.json(
         { error: 'Falha ao adicionar participante' },
@@ -27,7 +27,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, participant });
+    // Busca um par existente que ainda não foi visualizado para "quebrar"
+    // Novo participante entra no meio: A -> B vira A -> Novo -> B
+    const { data: existingPair } = await supabase
+      .from('pairs')
+      .select('id, giver_id, receiver_id')
+      .eq('group_id', groupId)
+      .is('viewed_at', null)
+      .limit(1)
+      .single();
+
+    if (existingPair) {
+      // Atualiza o par existente: A agora tira o Novo
+      await supabase
+        .from('pairs')
+        .update({ receiver_id: newParticipant.id })
+        .eq('id', existingPair.id);
+
+      // Novo participante tira quem A tirava antes (B)
+      await supabase
+        .from('pairs')
+        .insert({
+          group_id: groupId,
+          giver_id: newParticipant.id,
+          receiver_id: existingPair.receiver_id,
+        });
+    } else {
+      // Todos já viram, pega qualquer par e faz o mesmo
+      const { data: anyPair } = await supabase
+        .from('pairs')
+        .select('id, giver_id, receiver_id')
+        .eq('group_id', groupId)
+        .limit(1)
+        .single();
+
+      if (anyPair) {
+        await supabase
+          .from('pairs')
+          .update({ receiver_id: newParticipant.id })
+          .eq('id', anyPair.id);
+
+        await supabase
+          .from('pairs')
+          .insert({
+            group_id: groupId,
+            giver_id: newParticipant.id,
+            receiver_id: anyPair.receiver_id,
+          });
+      }
+    }
+
+    return NextResponse.json({ success: true, participant: newParticipant });
   } catch (error) {
     console.error('Erro inesperado:', error);
     return NextResponse.json(

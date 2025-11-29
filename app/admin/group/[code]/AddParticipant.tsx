@@ -72,9 +72,6 @@ export default function AddParticipant({ groupId }: { groupId: number }) {
           {loading ? '...' : 'Adicionar'}
         </button>
       </div>
-      <p style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.5rem' }}>
-        Nota: Novo participante não terá par até refazer o sorteio.
-      </p>
     </form>
   );
 }

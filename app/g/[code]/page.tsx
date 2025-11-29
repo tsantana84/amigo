@@ -63,10 +63,14 @@ export default async function GroupPage({
   const viewedCookie = cookieStore.get(`amigo_${code}`);
   const viewedParticipantId = viewedCookie ? parseInt(viewedCookie.value, 10) : null;
 
-  // Se já viu, encontra o participante
+  // Se já viu, encontra o participante (só se tiver par válido)
   let alreadyViewed = null;
   if (viewedParticipantId) {
-    alreadyViewed = participantsWithReceiver.find((p) => p.id === viewedParticipantId) || null;
+    const found = participantsWithReceiver.find((p) => p.id === viewedParticipantId);
+    // Só considera como "já viu" se tiver um receiverId válido
+    if (found && found.receiverId) {
+      alreadyViewed = found;
+    }
   }
 
   return (

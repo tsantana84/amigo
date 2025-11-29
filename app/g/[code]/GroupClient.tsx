@@ -64,8 +64,8 @@ export default function GroupClient({ groupId, groupCode, groupName, participant
     );
   }
 
-  // Filtra participantes que ainda não viram
-  const availableParticipants = participants.filter((p) => !p.viewedAt);
+  // Filtra participantes que ainda não viram E que têm par no sorteio
+  const availableParticipants = participants.filter((p) => !p.viewedAt && p.receiverId);
 
   if (availableParticipants.length === 0) {
     return (
