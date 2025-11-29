@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import CopyLink from './CopyLink';
 import DeleteButton from './DeleteButton';
+import AddParticipant from './AddParticipant';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,6 +111,8 @@ export default async function AdminGroupPage({
           </div>
         ))}
       </div>
+
+      <AddParticipant groupId={group.id} />
 
       <DeleteButton groupId={group.id} />
 
