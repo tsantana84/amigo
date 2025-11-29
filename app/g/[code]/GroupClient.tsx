@@ -6,9 +6,11 @@ interface Participant {
   id: number;
   name: string;
   receiverId: number;
+  viewedAt: string | null;
 }
 
 interface Props {
+  groupId: number;
   groupCode: string;
   groupName: string;
   participants: Participant[];
@@ -16,22 +18,23 @@ interface Props {
   alreadyViewed: Participant | null;
 }
 
-export default function GroupClient({ groupCode, groupName, participants, participantsMap, alreadyViewed }: Props) {
+export default function GroupClient({ groupId, groupCode, groupName, participants, participantsMap, alreadyViewed }: Props) {
   const [selected, setSelected] = useState<Participant | null>(alreadyViewed);
 
   async function handleSelect(participant: Participant) {
-    // Salva cookie via API
+    // Salva cookie e marca no banco
     try {
       await fetch('/api/set-cookie', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           groupCode,
+          groupId,
           visitorId: participant.id,
         }),
       });
     } catch (err) {
-      console.error('Erro ao salvar cookie:', err);
+      console.error('Erro ao salvar:', err);
     }
 
     setSelected(participant);
@@ -61,6 +64,19 @@ export default function GroupClient({ groupCode, groupName, participants, partic
     );
   }
 
+  // Filtra participantes que ainda não viram
+  const availableParticipants = participants.filter((p) => !p.viewedAt);
+
+  if (availableParticipants.length === 0) {
+    return (
+      <main className="container" style={{ paddingTop: '40px' }}>
+        <div className="icon">✅</div>
+        <h1>{groupName}</h1>
+        <p>Todos os participantes já descobriram seus amigos secretos!</p>
+      </main>
+    );
+  }
+
   return (
     <main className="container" style={{ paddingTop: '40px' }}>
       <div className="icon">🎅</div>
@@ -69,7 +85,7 @@ export default function GroupClient({ groupCode, groupName, participants, partic
       <p>Toque no seu nome para descobrir quem você tirou:</p>
 
       <div className="participant-list">
-        {participants.map((p) => (
+        {availableParticipants.map((p) => (
           <button
             key={p.id}
             onClick={() => handleSelect(p)}

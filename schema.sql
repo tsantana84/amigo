@@ -25,6 +25,9 @@ CREATE TABLE pairs (
   viewed_at TIMESTAMPTZ DEFAULT NULL
 );
 
+-- Para adicionar a coluna em tabelas existentes:
+-- ALTER TABLE pairs ADD COLUMN viewed_at TIMESTAMPTZ DEFAULT NULL;
+
 -- Create indexes for better query performance
 CREATE INDEX idx_participants_group_id ON participants(group_id);
 CREATE INDEX idx_pairs_group_id ON pairs(group_id);

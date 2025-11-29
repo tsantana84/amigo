@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabaseClient';
 import { cookies } from 'next/headers';
 import GroupClient from './GroupClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function GroupPage({
   params,
 }: {
@@ -33,18 +35,22 @@ export default async function GroupPage({
 
   const { data: pairs } = await supabase
     .from('pairs')
-    .select('giver_id, receiver_id')
+    .select('giver_id, receiver_id, viewed_at')
     .eq('group_id', group.id);
 
-  const pairsMap: Record<number, number> = {};
+  const pairsMap: Record<number, { receiverId: number; viewedAt: string | null }> = {};
   pairs?.forEach((pair) => {
-    pairsMap[pair.giver_id] = pair.receiver_id;
+    pairsMap[pair.giver_id] = {
+      receiverId: pair.receiver_id,
+      viewedAt: pair.viewed_at,
+    };
   });
 
   const participantsWithReceiver = participants?.map((p) => ({
     id: p.id,
     name: p.name,
-    receiverId: pairsMap[p.id],
+    receiverId: pairsMap[p.id]?.receiverId,
+    viewedAt: pairsMap[p.id]?.viewedAt,
   })) || [];
 
   const participantsMap: Record<number, string> = {};
@@ -65,6 +71,7 @@ export default async function GroupPage({
 
   return (
     <GroupClient
+      groupId={group.id}
       groupCode={code}
       groupName={group.name}
       participants={participantsWithReceiver}

@@ -3,6 +3,8 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import CopyLink from './CopyLink';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminGroupPage({
   params,
 }: {
@@ -33,6 +35,23 @@ export default async function AdminGroupPage({
     .eq('group_id', group.id)
     .order('name');
 
+  const { data: pairs } = await supabase
+    .from('pairs')
+    .select('giver_id, viewed_at')
+    .eq('group_id', group.id);
+
+  const viewedMap: Record<number, boolean> = {};
+  pairs?.forEach((pair) => {
+    viewedMap[pair.giver_id] = !!pair.viewed_at;
+  });
+
+  const participantsWithStatus = participants?.map((p) => ({
+    ...p,
+    viewed: viewedMap[p.id] || false,
+  })) || [];
+
+  const pendingCount = participantsWithStatus.filter((p) => !p.viewed).length;
+
   const headersList = headers();
   const host = headersList.get('host') || 'localhost:3000';
   const protocol = host.includes('localhost') ? 'http' : 'https';
@@ -50,7 +69,14 @@ export default async function AdminGroupPage({
         <CopyLink url={shareUrl} />
       </div>
 
-      <h2 style={{ marginTop: '2rem' }}>Participantes ({participants?.length || 0})</h2>
+      <h2 style={{ marginTop: '2rem' }}>
+        Participantes ({participants?.length || 0})
+        {pendingCount > 0 && (
+          <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: '#666' }}>
+            {' '}— {pendingCount} pendente{pendingCount > 1 ? 's' : ''}
+          </span>
+        )}
+      </h2>
 
       <div style={{
         background: '#fff',
@@ -59,15 +85,27 @@ export default async function AdminGroupPage({
         overflow: 'hidden',
         marginBottom: '2rem'
       }}>
-        {participants?.map((p, index) => (
+        {participantsWithStatus.map((p, index) => (
           <div
             key={p.id}
             style={{
               padding: '12px 16px',
-              borderBottom: index < (participants?.length || 0) - 1 ? '1px solid #eee' : 'none'
+              borderBottom: index < participantsWithStatus.length - 1 ? '1px solid #eee' : 'none',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}
           >
-            {p.name}
+            <span>{p.name}</span>
+            <span style={{
+              fontSize: '0.8rem',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              background: p.viewed ? '#e8f5e9' : '#fff3e0',
+              color: p.viewed ? '#2e7d32' : '#e65100',
+            }}>
+              {p.viewed ? '✓ Viu' : 'Pendente'}
+            </span>
           </div>
         ))}
       </div>

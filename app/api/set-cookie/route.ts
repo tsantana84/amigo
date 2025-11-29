@@ -1,30 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
-    const { groupCode, visitorId } = await request.json();
+    const { groupCode, groupId, visitorId } = await request.json();
 
-    if (!groupCode || !visitorId) {
+    if (!groupCode || !visitorId || !groupId) {
       return NextResponse.json(
         { error: 'Dados inválidos' },
         { status: 400 }
       );
     }
 
-    const cookieStore = cookies();
+    // Marca como visualizado no banco
+    await supabase
+      .from('pairs')
+      .update({ viewed_at: new Date().toISOString() })
+      .eq('giver_id', visitorId)
+      .eq('group_id', groupId);
 
-    // Cookie expira em 1 ano
+    // Salva cookie
+    const cookieStore = cookies();
     cookieStore.set(`amigo_${groupCode}`, String(visitorId), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 365, // 1 ano
+      maxAge: 60 * 60 * 24 * 365,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Erro ao salvar cookie:', error);
+    console.error('Erro ao salvar:', error);
     return NextResponse.json(
       { error: 'Ocorreu um erro inesperado' },
       { status: 500 }
