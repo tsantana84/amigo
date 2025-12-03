@@ -11,12 +11,23 @@ interface Group {
   created_at: string;
 }
 
+interface Participant {
+  name: string;
+  email: string;
+  unit: string;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
+  const [groupName, setGroupName] = useState('');
+  const [participants, setParticipants] = useState<Participant[]>([
+    { name: '', email: '', unit: '' },
+    { name: '', email: '', unit: '' },
+  ]);
 
   useEffect(() => {
     async function fetchGroups() {
@@ -35,18 +46,44 @@ export default function AdminPage() {
     fetchGroups();
   }, []);
 
+  function updateParticipant(index: number, field: 'name' | 'email' | 'unit', value: string) {
+    const updated = [...participants];
+    updated[index][field] = value;
+    setParticipants(updated);
+  }
+
+  function addParticipant() {
+    setParticipants([...participants, { name: '', email: '', unit: '' }]);
+  }
+
+  function removeParticipant(index: number) {
+    if (participants.length <= 2) return;
+    setParticipants(participants.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    const validParticipants = participants.filter(
+      (p) => p.name.trim() && p.email.trim()
+    );
+
+    if (validParticipants.length < 2) {
+      setError('Por favor, insira pelo menos 2 participantes com nome e email');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/create-group', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupName,
+          participants: validParticipants,
+        }),
       });
 
       const data = await response.json();
@@ -79,18 +116,58 @@ export default function AdminPage() {
             id="groupName"
             name="groupName"
             placeholder="Ex: Natal da Família 2024"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
             required
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="participants">Participantes (um nome por linha)</label>
-          <textarea
-            id="participants"
-            name="participants"
-            placeholder={'Maria\nJoão\nAna\nPedro'}
-            required
-          />
+          <label>Participantes</label>
+          {participants.map((participant, index) => (
+            <div key={index} className="participant-card">
+              <div className="participant-card-header">
+                <span className="participant-card-number">
+                  Participante {index + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeParticipant(index)}
+                  disabled={participants.length <= 2}
+                  className="participant-card-remove"
+                >
+                  ×
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="Nome"
+                value={participant.name}
+                onChange={(e) => updateParticipant(index, 'name', e.target.value)}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={participant.email}
+                onChange={(e) => updateParticipant(index, 'email', e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Unidade (opcional)"
+                value={participant.unit}
+                onChange={(e) => updateParticipant(index, 'unit', e.target.value)}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addParticipant}
+            className="btn-secondary-outline"
+          >
+            + Adicionar Participante
+          </button>
         </div>
 
         <button type="submit" className="btn" disabled={loading}>

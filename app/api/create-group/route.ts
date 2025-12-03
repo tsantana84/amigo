@@ -54,11 +54,16 @@ function generatePairs(participantIds: number[]): { giverId: number; receiverId:
   throw new Error('Could not generate valid pairs');
 }
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const groupName = formData.get('groupName')?.toString().trim();
-    const participantsText = formData.get('participants')?.toString() || '';
+    const body = await request.json();
+    const groupName = body.groupName?.toString().trim();
+    const participants: { name: string; email: string; unit?: string }[] = body.participants || [];
 
     if (!groupName) {
       return NextResponse.json(
@@ -67,14 +72,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const participantNames = participantsText
-      .split('\n')
-      .map((name) => name.trim())
-      .filter((name) => name.length > 0);
+    const validParticipants = participants
+      .map((p) => ({
+        name: p.name?.trim() || '',
+        email: p.email?.trim().toLowerCase() || '',
+        unit: p.unit?.trim() || null,
+      }))
+      .filter((p) => p.name.length > 0 && p.email.length > 0);
 
-    if (participantNames.length < 2) {
+    if (validParticipants.length < 2) {
       return NextResponse.json(
-        { error: 'Por favor, insira pelo menos 2 participantes' },
+        { error: 'Por favor, insira pelo menos 2 participantes com nome e email' },
+        { status: 400 }
+      );
+    }
+
+    const invalidEmails = validParticipants.filter((p) => !isValidEmail(p.email));
+    if (invalidEmails.length > 0) {
+      return NextResponse.json(
+        { error: `Email inválido: ${invalidEmails[0].email}` },
         { status: 400 }
       );
     }
@@ -95,17 +111,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const participantRows = participantNames.map((name) => ({
+    const participantRows = validParticipants.map((p) => ({
       group_id: group.id,
-      name,
+      name: p.name,
+      email: p.email,
+      unit: p.unit,
     }));
 
-    const { data: participants, error: participantsError } = await supabase
+    const { data: createdParticipants, error: participantsError } = await supabase
       .from('participants')
       .insert(participantRows)
       .select();
 
-    if (participantsError || !participants) {
+    if (participantsError || !createdParticipants) {
       console.error('Error creating participants:', participantsError);
       return NextResponse.json(
         { error: 'Falha ao adicionar participantes' },
@@ -113,7 +131,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const participantIds = participants.map((p) => p.id);
+    const participantIds = createdParticipants.map((p) => p.id);
     const pairs = generatePairs(participantIds);
 
     const pairRows = pairs.map((pair) => ({

@@ -210,3 +210,85 @@ textarea {
 .back-link:hover {
   text-decoration: underline;
 }
+
+/* Participant form cards */
+.participant-card {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.participant-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.participant-card-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.participant-card-remove {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.participant-card-remove:hover:not(:disabled) {
+  color: #e74c3c;
+}
+
+.participant-card-remove:disabled {
+  color: #ddd;
+  cursor: not-allowed;
+}
+
+.participant-card input {
+  margin-bottom: 0.5rem;
+}
+
+.participant-card input:last-child {
+  margin-bottom: 0;
+}
+
+input[type="email"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+input[type="email"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-secondary-outline {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--primary-color);
+  background: white;
+  border: 2px dashed var(--primary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary-outline:hover {
+  background-color: #fff5f5;
+}

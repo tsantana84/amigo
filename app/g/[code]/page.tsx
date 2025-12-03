@@ -29,7 +29,7 @@ export default async function GroupPage({
 
   const { data: participants } = await supabase
     .from('participants')
-    .select('id, name')
+    .select('id, name, email')
     .eq('group_id', group.id)
     .order('name');
 
@@ -49,6 +49,7 @@ export default async function GroupPage({
   const participantsWithReceiver = participants?.map((p) => ({
     id: p.id,
     name: p.name,
+    hasEmail: !!p.email,
     receiverId: pairsMap[p.id]?.receiverId,
     viewedAt: pairsMap[p.id]?.viewedAt,
   })) || [];

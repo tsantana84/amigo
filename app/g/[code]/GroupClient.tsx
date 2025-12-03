@@ -5,6 +5,7 @@ import { useState } from 'react';
 interface Participant {
   id: number;
   name: string;
+  hasEmail: boolean;
   receiverId: number;
   viewedAt: string | null;
 }
@@ -20,9 +21,23 @@ interface Props {
 
 export default function GroupClient({ groupId, groupCode, groupName, participants, participantsMap, alreadyViewed }: Props) {
   const [selected, setSelected] = useState<Participant | null>(alreadyViewed);
+  const [pendingParticipant, setPendingParticipant] = useState<Participant | null>(null);
+  const [email, setEmail] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSelect(participant: Participant) {
-    // Salva cookie e marca no banco
+  async function handleNameClick(participant: Participant) {
+    // If participant has no email (old groups), skip verification
+    if (!participant.hasEmail) {
+      await confirmParticipant(participant);
+      return;
+    }
+    setPendingParticipant(participant);
+    setEmail('');
+    setError(null);
+  }
+
+  async function confirmParticipant(participant: Participant) {
     try {
       await fetch('/api/set-cookie', {
         method: 'POST',
@@ -38,9 +53,48 @@ export default function GroupClient({ groupId, groupCode, groupName, participant
     }
 
     setSelected(participant);
-
-    // Substitui o histórico para impedir voltar
+    setPendingParticipant(null);
     window.history.replaceState(null, '', window.location.href);
+  }
+
+  async function handleVerifyEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pendingParticipant || !email.trim()) return;
+
+    setVerifying(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantId: pendingParticipant.id,
+          email: email.trim().toLowerCase(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Email incorreto');
+        setVerifying(false);
+        return;
+      }
+
+      // Email verified, now confirm participant
+      await confirmParticipant(pendingParticipant);
+    } catch (err) {
+      setError('Erro ao verificar email');
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  function handleCancelVerification() {
+    setPendingParticipant(null);
+    setEmail('');
+    setError(null);
   }
 
   if (selected) {
@@ -77,6 +131,66 @@ export default function GroupClient({ groupId, groupCode, groupName, participant
     );
   }
 
+  // Email verification modal
+  if (pendingParticipant) {
+    return (
+      <main className="container" style={{ paddingTop: '40px' }}>
+        <div className="icon">🔐</div>
+        <h1>Confirme sua identidade</h1>
+        <p><strong>{pendingParticipant.name}</strong>, digite seu email para continuar:</p>
+
+        <form onSubmit={handleVerifyEmail} style={{ marginTop: '1rem' }}>
+          {error && <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Seu email"
+            autoFocus
+            required
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '1rem',
+              border: '2px solid #ddd',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={handleCancelVerification}
+              style={{
+                flex: 1,
+                padding: '12px',
+                fontSize: '1rem',
+                background: '#ccc',
+                color: '#333',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              Voltar
+            </button>
+            <button
+              type="submit"
+              disabled={verifying || !email.trim()}
+              className="btn"
+              style={{
+                flex: 1,
+                opacity: verifying || !email.trim() ? 0.6 : 1,
+              }}
+            >
+              {verifying ? 'Verificando...' : 'Confirmar'}
+            </button>
+          </div>
+        </form>
+      </main>
+    );
+  }
+
   return (
     <main className="container" style={{ paddingTop: '40px' }}>
       <div className="icon">🎅</div>
@@ -88,7 +202,7 @@ export default function GroupClient({ groupId, groupCode, groupName, participant
         {availableParticipants.map((p) => (
           <button
             key={p.id}
-            onClick={() => handleSelect(p)}
+            onClick={() => handleNameClick(p)}
             className="participant-button"
             style={{ border: 'none', cursor: 'pointer' }}
           >

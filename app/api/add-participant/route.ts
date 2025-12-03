@@ -1,13 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { groupId, name } = await request.json();
+    const { groupId, name, email, unit } = await request.json();
 
-    if (!groupId || !name?.trim()) {
+    if (!groupId || !name?.trim() || !email?.trim()) {
       return NextResponse.json(
-        { error: 'Dados inválidos' },
+        { error: 'Nome e email são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!isValidEmail(trimmedEmail)) {
+      return NextResponse.json(
+        { error: 'Email inválido' },
         { status: 400 }
       );
     }
@@ -15,7 +28,12 @@ export async function POST(request: NextRequest) {
     // Adiciona o participante
     const { data: newParticipant, error: participantError } = await supabase
       .from('participants')
-      .insert({ group_id: groupId, name: name.trim() })
+      .insert({
+        group_id: groupId,
+        name: name.trim(),
+        email: trimmedEmail,
+        unit: unit?.trim() || null,
+      })
       .select()
       .single();
 
