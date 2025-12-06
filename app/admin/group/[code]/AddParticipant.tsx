@@ -13,7 +13,7 @@ export default function AddParticipant({ groupId }: { groupId: number }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!name.trim()) return;
 
     setLoading(true);
     setError(null);
@@ -22,7 +22,7 @@ export default function AddParticipant({ groupId }: { groupId: number }) {
       const response = await fetch('/api/add-participant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupId, name: name.trim(), email: email.trim(), unit: unit.trim() || null }),
+        body: JSON.stringify({ groupId, name: name.trim(), email: email.trim() || null, unit: unit.trim() || null }),
       });
 
       if (response.ok) {
@@ -41,7 +41,7 @@ export default function AddParticipant({ groupId }: { groupId: number }) {
     }
   }
 
-  const isValid = name.trim() && email.trim();
+  const isValid = name.trim();
 
   return (
     <form onSubmit={handleSubmit} className="participant-card" style={{ marginTop: '1rem' }}>
@@ -56,7 +56,7 @@ export default function AddParticipant({ groupId }: { groupId: number }) {
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
+        placeholder="Email (opcional)"
       />
       <input
         type="text"

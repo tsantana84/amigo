@@ -10,15 +10,15 @@ export async function POST(request: NextRequest) {
   try {
     const { groupId, name, email, unit } = await request.json();
 
-    if (!groupId || !name?.trim() || !email?.trim()) {
+    if (!groupId || !name?.trim()) {
       return NextResponse.json(
-        { error: 'Nome e email são obrigatórios' },
+        { error: 'Nome é obrigatório' },
         { status: 400 }
       );
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
-    if (!isValidEmail(trimmedEmail)) {
+    const trimmedEmail = email?.trim().toLowerCase() || null;
+    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
       return NextResponse.json(
         { error: 'Email inválido' },
         { status: 400 }

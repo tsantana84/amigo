@@ -67,11 +67,11 @@ export default function AdminPage() {
     setLoading(true);
 
     const validParticipants = participants.filter(
-      (p) => p.name.trim() && p.email.trim()
+      (p) => p.name.trim()
     );
 
     if (validParticipants.length < 2) {
-      setError('Por favor, insira pelo menos 2 participantes com nome e email');
+      setError('Por favor, insira pelo menos 2 participantes com nome');
       setLoading(false);
       return;
     }
@@ -148,10 +148,9 @@ export default function AdminPage() {
               />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Email (opcional)"
                 value={participant.email}
                 onChange={(e) => updateParticipant(index, 'email', e.target.value)}
-                required
               />
               <input
                 type="text"

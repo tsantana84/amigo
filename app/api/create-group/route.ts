@@ -75,19 +75,19 @@ export async function POST(request: NextRequest) {
     const validParticipants = participants
       .map((p) => ({
         name: p.name?.trim() || '',
-        email: p.email?.trim().toLowerCase() || '',
+        email: p.email?.trim().toLowerCase() || null,
         unit: p.unit?.trim() || null,
       }))
-      .filter((p) => p.name.length > 0 && p.email.length > 0);
+      .filter((p) => p.name.length > 0);
 
     if (validParticipants.length < 2) {
       return NextResponse.json(
-        { error: 'Por favor, insira pelo menos 2 participantes com nome e email' },
+        { error: 'Por favor, insira pelo menos 2 participantes com nome' },
         { status: 400 }
       );
     }
 
-    const invalidEmails = validParticipants.filter((p) => !isValidEmail(p.email));
+    const invalidEmails = validParticipants.filter((p) => p.email && !isValidEmail(p.email));
     if (invalidEmails.length > 0) {
       return NextResponse.json(
         { error: `Email inválido: ${invalidEmails[0].email}` },
